@@ -10,16 +10,16 @@
   <script src="questions.js"></script>
   <style>
     :root {
-      --bg: #07121f;
-      --panel: rgba(12, 26, 44, 0.75);
-      --surface: #0f2136;
+      --bg: #050910;
+      --panel: rgba(12, 22, 38, 0.8);
+      --surface: rgba(18, 30, 48, 0.85);
       --accent: #f26d3d;
-      --accent-2: #58c2c7;
-      --muted: #9cb3d4;
-      --text: #eaf1ff;
+      --accent-2: #7ce7f5;
+      --muted: #a5b8d8;
+      --text: #f3f6ff;
       --correct: #4ad66d;
       --wrong: #ff7a7a;
-      --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      --shadow: 0 14px 46px rgba(0, 0, 0, 0.35);
     }
 
     * { box-sizing: border-box; }
@@ -28,9 +28,11 @@
       min-height: 100vh;
       font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
       color: var(--text);
-      background: radial-gradient(1200px at 15% 20%, rgba(88, 194, 199, 0.22), transparent),
-                  radial-gradient(1000px at 85% 10%, rgba(242, 109, 61, 0.18), transparent),
-                  linear-gradient(160deg, #060c16 0%, #091527 45%, #0b1930 100%);
+      background:
+        radial-gradient(1100px at 10% 20%, rgba(124, 231, 245, 0.18), transparent),
+        radial-gradient(900px at 90% 0%, rgba(242, 109, 61, 0.16), transparent),
+        radial-gradient(700px at 70% 80%, rgba(95, 114, 255, 0.18), transparent),
+        linear-gradient(160deg, #050910 0%, #0a1424 45%, #0c1b32 100%);
       padding: 28px clamp(16px, 3vw, 38px);
     }
 
@@ -39,13 +41,31 @@
       margin: 0 auto 72px;
     }
 
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 18px;
+      align-items: start;
+    }
+
     header.hero {
       background: var(--panel);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 22px;
-      padding: 26px 26px 20px;
+      padding: 26px 26px 22px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header.hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(500px at 20% 30%, rgba(124, 231, 245, 0.14), transparent),
+                  radial-gradient(480px at 80% 0%, rgba(242, 109, 61, 0.12), transparent);
+      pointer-events: none;
     }
 
     .eyebrow {
@@ -118,6 +138,7 @@
       border-radius: 16px;
       padding: 14px 16px;
       box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
     }
 
     .stat-label {
@@ -163,6 +184,103 @@
       transition: width 0.3s ease;
     }
 
+    .dashboard {
+      position: sticky;
+      top: 20px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 12px;
+      height: fit-content;
+    }
+
+    .dash-title { font-weight: 700; letter-spacing: 0.04em; color: var(--accent-2); text-transform: uppercase; font-size: 13px; }
+    .dash-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 12px; }
+    .dash-label { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .dash-value { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .dash-good { color: var(--correct); }
+    .dash-bad { color: var(--wrong); }
+    .progress.small { height: 8px; margin-top: 8px; }
+
+    .mobile-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(12, 22, 38, 0.95);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.3);
+    }
+
+    .mobile-score { font-size: 14px; color: var(--text); }
+    .mobile-actions { display: flex; gap: 8px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 14px;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 12px 14px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    }
+
+    .overview-item {
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      transition: transform 0.08s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .overview-item:hover { transform: translateY(-1px); }
+    .overview-item.correct { border-color: rgba(74,214,109,0.6); color: var(--correct); }
+    .overview-item.incorrect { border-color: rgba(255,122,122,0.6); color: var(--wrong); }
+    .overview-item.unanswered { color: var(--muted); }
+
     .filter-controls {
       display: flex;
       gap: 10px;
@@ -192,10 +310,10 @@
 
     .question-card {
       background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 18px;
       padding: 14px 14px 16px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -258,9 +376,9 @@
       width: 100%;
       text-align: left;
       padding: 12px 12px 12px 46px;
-      background: rgba(255, 255, 255, 0.04);
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
       color: var(--text);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       cursor: pointer;
       position: relative;
@@ -287,7 +405,7 @@
     .option-btn:hover { transform: translateY(-1px); }
     .option-btn:active { transform: translateY(0); }
 
-    .option-btn.picked { border-color: var(--accent-2); background: rgba(88, 194, 199, 0.12); }
+    .option-btn.picked { border-color: var(--accent-2); background: rgba(124, 231, 245, 0.12); }
     .option-btn.correct { border-color: var(--correct); background: rgba(74, 214, 109, 0.12); }
     .option-btn.wrong { border-color: var(--wrong); background: rgba(255, 122, 122, 0.12); }
 
@@ -295,6 +413,7 @@
       font-size: 14px;
       color: var(--muted);
       padding-left: 6px;
+      display: none;
     }
 
     .hidden { display: none !important; }
@@ -309,6 +428,13 @@
       100% { box-shadow: 0 0 0 0 rgba(88, 194, 199, 0); }
     }
 
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .dashboard { display: none; }
+      .mobile-bar { display: flex; }
+      body { padding-bottom: 90px; }
+    }
+
     @media (max-width: 640px) {
       body { padding: 18px 14px 34px; }
       .question-card { padding: 12px 12px 14px; }
@@ -320,47 +446,89 @@
 </head>
 <body>
   <div class="page">
-    <header class="hero">
-      <div class="eyebrow">Citizenship practice</div>
-      <h1>Instant-feedback question bank</h1>
-      <p class="intro">
-        按下選項立即知道對錯，統計面板同步記錄作答狀態。搜尋題目、篩選正確或未作答的題目，隨時重置再試。
-      </p>
-      <div class="hero-actions">
-        <button class="btn primary" id="reset-btn">Reset progress</button>
-        <button class="btn secondary" id="jump-unanswered">Jump to first unanswered</button>
-        <div class="stat-row" id="live-stats">
-          <span>Answered: <strong id="answered-count">0</strong>/<span id="total-count">0</span></span>
-          <span>&middot;</span>
-          <span>Correct: <strong id="correct-count">0</strong></span>
-          <span>&middot;</span>
-          <span>Incorrect: <strong id="incorrect-count">0</strong></span>
-        </div>
-      </div>
-    </header>
+    <div class="layout">
+      <div class="main-column">
+        <header class="hero">
+          <div class="eyebrow">Citizenship practice</div>
+          <h1>Instant-feedback question bank</h1>
+          <p class="intro">
+            按下選項立即知道對錯，統計面板同步記錄作答狀態。搜尋題目、篩選正確或未作答的題目，隨時重置再試。
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary" id="reset-btn">Reset progress</button>
+            <button class="btn secondary" id="jump-unanswered">Jump to first unanswered</button>
+            <div class="stat-row" id="live-stats">
+              <span>Answered: <strong id="answered-count">0</strong>/<span id="total-count">0</span></span>
+              <span>&middot;</span>
+              <span>Correct: <strong id="correct-count">0</strong></span>
+              <span>&middot;</span>
+              <span>Incorrect: <strong id="incorrect-count">0</strong></span>
+            </div>
+          </div>
+        </header>
 
-    <div class="toolbar">
-      <div class="stat-card">
-        <div class="stat-label">Progress</div>
-        <div class="stat-value" id="progress-percent">0%</div>
-        <div class="progress"><span id="progress-bar"></span></div>
-      </div>
-      <div class="filter-card">
-        <div class="stat-label">Filter & Search</div>
-        <div class="filter-controls">
-          <input type="search" id="search" placeholder="搜尋題目或輸入編號 (e.g. 12)">
-          <select id="status-filter">
-            <option value="all">全部</option>
-            <option value="unanswered">未作答</option>
-            <option value="correct">答對</option>
-            <option value="incorrect">答錯</option>
-          </select>
-          <button class="btn secondary" id="clear-filters">Clear filters</button>
+        <div class="toolbar">
+          <div class="stat-card">
+            <div class="stat-label">Progress</div>
+            <div class="stat-value" id="progress-percent">0%</div>
+            <div class="progress"><span id="progress-bar"></span></div>
+          </div>
+          <div class="filter-card">
+            <div class="stat-label">Filter & Search</div>
+            <div class="filter-controls">
+              <input type="search" id="search" placeholder="Search question or number (e.g. 12)">
+              <select id="status-filter">
+                <option value="all">All</option>
+                <option value="unanswered">Unanswered</option>
+                <option value="correct">Correct</option>
+                <option value="incorrect">Incorrect</option>
+              </select>
+              <button class="btn secondary" id="clear-filters">Clear filters</button>
+            </div>
+          </div>
         </div>
+
+        <section id="question-grid" class="question-grid" aria-live="polite"></section>
+      </div>
+
+      <aside class="dashboard">
+        <div class="dash-title">Dashboard</div>
+        <div class="dash-item">
+          <div class="dash-label">Answered</div>
+          <div class="dash-value"><span id="dash-answered">0</span>/<span id="dash-total">0</span></div>
+        </div>
+        <div class="dash-item">
+          <div class="dash-label">Correct</div>
+          <div class="dash-value dash-good" id="dash-correct">0</div>
+        </div>
+        <div class="dash-item">
+          <div class="dash-label">Incorrect</div>
+          <div class="dash-value dash-bad" id="dash-incorrect">0</div>
+        </div>
+        <div class="dash-item">
+          <div class="dash-label">Progress</div>
+          <div class="dash-value" id="dash-percent">0%</div>
+          <div class="progress small"><span id="dash-progress-bar"></span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="mobile-bar">
+      <div class="mobile-score">Ans: <span id="mb-answered">0</span>/<span id="mb-total">0</span> | Correct <span id="mb-correct">0</span> | Wrong <span id="mb-incorrect">0</span> | <span id="mb-percent">0%</span></div>
+      <div class="mobile-actions">
+        <button class="btn secondary" id="open-overview">Overview</button>
       </div>
     </div>
 
-    <section id="question-grid" class="question-grid" aria-live="polite"></section>
+<div class="modal-backdrop" id="overview-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>Overview</div>
+          <button class="btn secondary" id="close-overview">Close</button>
+        </div>
+        <div class="modal-body" id="overview-list"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -376,6 +544,21 @@
     const progressPercent = document.getElementById('progress-percent');
     const searchInput = document.getElementById('search');
     const statusFilter = document.getElementById('status-filter');
+    const dashAnswered = document.getElementById('dash-answered');
+    const dashTotal = document.getElementById('dash-total');
+    const dashCorrect = document.getElementById('dash-correct');
+    const dashIncorrect = document.getElementById('dash-incorrect');
+    const dashPercent = document.getElementById('dash-percent');
+    const dashProgressBar = document.getElementById('dash-progress-bar');
+    const mbAnswered = document.getElementById('mb-answered');
+    const mbTotal = document.getElementById('mb-total');
+    const mbCorrect = document.getElementById('mb-correct');
+    const mbIncorrect = document.getElementById('mb-incorrect');
+    const mbPercent = document.getElementById('mb-percent');
+    const overviewModal = document.getElementById('overview-modal');
+    const overviewList = document.getElementById('overview-list');
+    const openOverviewBtn = document.getElementById('open-overview');
+    const closeOverviewBtn = document.getElementById('close-overview');
 
     function normalizeQuestion(text) {
       return text.replace(/^\\d+\\.\\s*/, '').trim();
@@ -383,6 +566,8 @@
 
     function renderQuestions() {
       totalCountEl.textContent = QUESTIONS.length;
+      dashTotal.textContent = QUESTIONS.length;
+      mbTotal.textContent = QUESTIONS.length;
       grid.innerHTML = '';
       QUESTIONS.forEach((q, index) => {
         state[index] = { choice: null, status: 'unanswered' };
@@ -437,18 +622,9 @@
       else if (st.status === 'incorrect') card.classList.add('incorrect');
       const pill = card.querySelector('.pill');
       pill.classList.remove('correct', 'incorrect');
-      pill.textContent = st.status === 'correct' ? '答對' : st.status === 'incorrect' ? '答錯' : '未作答';
+      pill.textContent = st.status === 'correct' ? 'Correct' : st.status === 'incorrect' ? 'Wrong' : 'Unanswered';
       if (st.status === 'correct') pill.classList.add('correct');
       if (st.status === 'incorrect') pill.classList.add('incorrect');
-
-      const feedback = card.querySelector('.feedback');
-      feedback.classList.remove('hidden');
-      const explanation = question.explanation
-        ? `重點：${question.explanation}`
-        : `重點：${question.options[question.answer]}`;
-      feedback.textContent = st.status === 'correct'
-        ? `做得好！這題答對了。${explanation}`
-        : `正確答案：${question.options[question.answer]}。${explanation}`;
 
       const buttons = card.querySelectorAll('.option-btn');
       buttons.forEach((btn, idx) => {
@@ -456,6 +632,26 @@
         if (idx === st.choice) btn.classList.add('picked');
         if (idx === question.answer) btn.classList.add('correct');
         else if (idx === st.choice) btn.classList.add('wrong');
+      });
+    }
+
+    function refreshOverview() {
+      if (!overviewList) return;
+      overviewList.innerHTML = '';
+      state.forEach((st, idx) => {
+        const item = document.createElement('button');
+        item.className = `overview-item ${st.status}`;
+        item.textContent = `Q${idx + 1}`;
+        item.addEventListener('click', () => {
+          overviewModal.style.display = 'none';
+          const target = document.querySelector(`.question-card[data-index="${idx}"]`);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.add('pulse');
+            setTimeout(() => target.classList.remove('pulse'), 800);
+          }
+        });
+        overviewList.appendChild(item);
       });
     }
 
@@ -467,7 +663,18 @@
       const percent = Math.round((answered / QUESTIONS.length) * 100);
       progressPercent.textContent = `${percent}%`;
       progressBar.style.width = `${percent}%`;
+       // dashboard + mobile
+      dashAnswered.textContent = answered;
+      dashCorrect.textContent = correctCount;
+      dashIncorrect.textContent = incorrectCount;
+      dashPercent.textContent = `${percent}%`;
+      dashProgressBar.style.width = `${percent}%`;
+      mbAnswered.textContent = answered;
+      mbCorrect.textContent = correctCount;
+      mbIncorrect.textContent = incorrectCount;
+      mbPercent.textContent = `${percent}%`;
       applyFilters();
+      refreshOverview();
     }
 
     function applyFilters() {
@@ -518,6 +725,16 @@
       searchInput.value = '';
       statusFilter.value = 'all';
       applyFilters();
+    });
+    openOverviewBtn.addEventListener('click', () => {
+      overviewModal.style.display = 'flex';
+      refreshOverview();
+    });
+    closeOverviewBtn.addEventListener('click', () => {
+      overviewModal.style.display = 'none';
+    });
+    overviewModal.addEventListener('click', (e) => {
+      if (e.target === overviewModal) overviewModal.style.display = 'none';
     });
     searchInput.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
