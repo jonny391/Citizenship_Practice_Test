@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citizenship Practice Test — Instant Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="questions.js"></script>
+  <style>
+    :root {
+      --bg: #07121f;
+      --panel: rgba(12, 26, 44, 0.75);
+      --surface: #0f2136;
+      --accent: #f26d3d;
+      --accent-2: #58c2c7;
+      --muted: #9cb3d4;
+      --text: #eaf1ff;
+      --correct: #4ad66d;
+      --wrong: #ff7a7a;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px at 15% 20%, rgba(88, 194, 199, 0.22), transparent),
+                  radial-gradient(1000px at 85% 10%, rgba(242, 109, 61, 0.18), transparent),
+                  linear-gradient(160deg, #060c16 0%, #091527 45%, #0b1930 100%);
+      padding: 28px clamp(16px, 3vw, 38px);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto 72px;
+    }
+
+    header.hero {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 26px 26px 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      letter-spacing: 0.1em;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      background: rgba(88, 194, 199, 0.1);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(88, 194, 199, 0.35);
+    }
+
+    h1 {
+      margin: 10px 0 12px;
+      font-size: clamp(26px, 3vw, 32px);
+      letter-spacing: -0.01em;
+    }
+
+    .intro {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #f26d3d, #ff9a62);
+      color: #0a0e18;
+      padding: 12px 16px;
+      box-shadow: 0 8px 24px rgba(242, 109, 61, 0.4);
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      padding: 11px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn:active { transform: translateY(1px); }
+    .btn:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
+
+    .toolbar {
+      margin: 18px 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card, .filter-card {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .progress {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress span {
+      position: absolute;
+      height: 100%;
+      left: 0;
+      top: 0;
+      width: 0%;
+      background: linear-gradient(135deg, #58c2c7, #73fbd3);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-controls input[type="search"],
+    .filter-controls select {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      min-width: 160px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .filter-controls input::placeholder { color: #7a8ca8; }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .question-card {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .question-card:hover { transform: translateY(-2px); }
+    .question-card.correct { border-color: rgba(74, 214, 109, 0.6); }
+    .question-card.incorrect { border-color: rgba(255, 122, 122, 0.6); }
+
+    .q-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .q-number {
+      font-weight: 700;
+      background: rgba(88, 194, 199, 0.2);
+      color: #8ff0f5;
+      padding: 8px 10px;
+      border-radius: 12px;
+      min-width: 46px;
+      text-align: center;
+    }
+
+    .q-text { line-height: 1.4; }
+
+    .pill {
+      margin-left: auto;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+
+    .pill.correct {
+      color: #0f1a10;
+      background: #4ad66d;
+      border-color: #4ad66d;
+    }
+
+    .pill.incorrect {
+      color: #301516;
+      background: #ff7a7a;
+      border-color: #ff7a7a;
+    }
+
+    .options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 12px 12px 12px 46px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.08s ease, border-color 0.2s ease, background 0.2s ease;
+      line-height: 1.35;
+    }
+
+    .option-btn .bullet {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .option-btn:hover { transform: translateY(-1px); }
+    .option-btn:active { transform: translateY(0); }
+
+    .option-btn.picked { border-color: var(--accent-2); background: rgba(88, 194, 199, 0.12); }
+    .option-btn.correct { border-color: var(--correct); background: rgba(74, 214, 109, 0.12); }
+    .option-btn.wrong { border-color: var(--wrong); background: rgba(255, 122, 122, 0.12); }
+
+    .feedback {
+      font-size: 14px;
+      color: var(--muted);
+      padding-left: 6px;
+    }
+
+    .hidden { display: none !important; }
+
+    .pulse {
+      animation: pulse 0.8s ease;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(88, 194, 199, 0.45); }
+      70% { box-shadow: 0 0 0 14px rgba(88, 194, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(88, 194, 199, 0); }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 18px 14px 34px; }
+      .question-card { padding: 12px 12px 14px; }
+      .q-header { flex-direction: column; }
+      .pill { margin-left: 0; }
+      .hero-actions { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="eyebrow">Citizenship practice</div>
+      <h1>Instant-feedback question bank</h1>
+      <p class="intro">
+        按下選項立即知道對錯，統計面板同步記錄作答狀態。搜尋題目、篩選正確或未作答的題目，隨時重置再試。
+      </p>
+      <div class="hero-actions">
+        <button class="btn primary" id="reset-btn">Reset progress</button>
+        <button class="btn secondary" id="jump-unanswered">Jump to first unanswered</button>
+        <div class="stat-row" id="live-stats">
+          <span>Answered: <strong id="answered-count">0</strong>/<span id="total-count">0</span></span>
+          <span>&middot;</span>
+          <span>Correct: <strong id="correct-count">0</strong></span>
+          <span>&middot;</span>
+          <span>Incorrect: <strong id="incorrect-count">0</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="stat-card">
+        <div class="stat-label">Progress</div>
+        <div class="stat-value" id="progress-percent">0%</div>
+        <div class="progress"><span id="progress-bar"></span></div>
+      </div>
+      <div class="filter-card">
+        <div class="stat-label">Filter & Search</div>
+        <div class="filter-controls">
+          <input type="search" id="search" placeholder="搜尋題目或輸入編號 (e.g. 12)">
+          <select id="status-filter">
+            <option value="all">全部</option>
+            <option value="unanswered">未作答</option>
+            <option value="correct">答對</option>
+            <option value="incorrect">答錯</option>
+          </select>
+          <button class="btn secondary" id="clear-filters">Clear filters</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="question-grid" class="question-grid" aria-live="polite"></section>
+  </div>
+
+  <script>
+    const state = [];
+    let correctCount = 0;
+    let incorrectCount = 0;
+    const grid = document.getElementById('question-grid');
+    const answeredCountEl = document.getElementById('answered-count');
+    const totalCountEl = document.getElementById('total-count');
+    const correctCountEl = document.getElementById('correct-count');
+    const incorrectCountEl = document.getElementById('incorrect-count');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const searchInput = document.getElementById('search');
+    const statusFilter = document.getElementById('status-filter');
+
+    function normalizeQuestion(text) {
+      return text.replace(/^\\d+\\.\\s*/, '').trim();
+    }
+
+    function renderQuestions() {
+      totalCountEl.textContent = QUESTIONS.length;
+      grid.innerHTML = '';
+      QUESTIONS.forEach((q, index) => {
+        state[index] = { choice: null, status: 'unanswered' };
+        const card = document.createElement('article');
+        card.className = 'question-card';
+        card.dataset.index = index;
+        card.dataset.status = 'unanswered';
+        const questionText = normalizeQuestion(q.question);
+        card.innerHTML = `
+          <div class="q-header">
+            <div class="q-number">Q${index + 1}</div>
+            <div class="q-text">${questionText}</div>
+            <span class="pill">未作答</span>
+          </div>
+          <div class="options">
+            ${q.options.map((opt, i) => `
+              <button class="option-btn" data-option="${i}">
+                <span class="bullet">${String.fromCharCode(65 + i)}</span>${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div class="feedback hidden"></div>
+        `;
+        card.querySelectorAll('.option-btn').forEach(btn => {
+          btn.addEventListener('click', () => handleAnswer(index, Number(btn.dataset.option), card));
+        });
+        grid.appendChild(card);
+      });
+      updateScore();
+    }
+
+    function handleAnswer(qIndex, choice, card) {
+      const q = QUESTIONS[qIndex];
+      const st = state[qIndex];
+      const wasStatus = st.status;
+      const isCorrect = choice === q.answer;
+      st.choice = choice;
+      st.status = isCorrect ? 'correct' : 'incorrect';
+
+      if (wasStatus === 'correct') correctCount--;
+      if (wasStatus === 'incorrect') incorrectCount--;
+      if (isCorrect) correctCount++; else incorrectCount++;
+
+      updateCardUI(card, q, st);
+      updateScore();
+    }
+
+    function updateCardUI(card, question, st) {
+      card.dataset.status = st.status;
+      card.classList.remove('correct', 'incorrect');
+      if (st.status === 'correct') card.classList.add('correct');
+      else if (st.status === 'incorrect') card.classList.add('incorrect');
+      const pill = card.querySelector('.pill');
+      pill.classList.remove('correct', 'incorrect');
+      pill.textContent = st.status === 'correct' ? '答對' : st.status === 'incorrect' ? '答錯' : '未作答';
+      if (st.status === 'correct') pill.classList.add('correct');
+      if (st.status === 'incorrect') pill.classList.add('incorrect');
+
+      const feedback = card.querySelector('.feedback');
+      feedback.classList.remove('hidden');
+      feedback.textContent = st.status === 'correct'
+        ? '做得好！這題答對了。'
+        : `正確答案：${question.options[question.answer]}`;
+
+      const buttons = card.querySelectorAll('.option-btn');
+      buttons.forEach((btn, idx) => {
+        btn.classList.remove('picked', 'correct', 'wrong');
+        if (idx === st.choice) btn.classList.add('picked');
+        if (idx === question.answer) btn.classList.add('correct');
+        else if (idx === st.choice) btn.classList.add('wrong');
+      });
+    }
+
+    function updateScore() {
+      const answered = correctCount + incorrectCount;
+      answeredCountEl.textContent = answered;
+      correctCountEl.textContent = correctCount;
+      incorrectCountEl.textContent = incorrectCount;
+      const percent = Math.round((answered / QUESTIONS.length) * 100);
+      progressPercent.textContent = `${percent}%`;
+      progressBar.style.width = `${percent}%`;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const term = searchInput.value.trim().toLowerCase();
+      const status = statusFilter.value;
+      document.querySelectorAll('.question-card').forEach(card => {
+        const idx = Number(card.dataset.index);
+        const q = QUESTIONS[idx];
+        const matchesSearch = term === '' ||
+          q.question.toLowerCase().includes(term) ||
+          String(idx + 1) === term;
+        const matchesStatus = status === 'all' || card.dataset.status === status;
+        card.classList.toggle('hidden', !(matchesSearch && matchesStatus));
+      });
+    }
+
+    function resetAll() {
+      correctCount = 0;
+      incorrectCount = 0;
+      state.forEach(st => { st.choice = null; st.status = 'unanswered'; });
+      document.querySelectorAll('.question-card').forEach(card => {
+        card.dataset.status = 'unanswered';
+        card.classList.remove('correct', 'incorrect');
+        card.querySelector('.pill').textContent = '未作答';
+        card.querySelector('.pill').classList.remove('correct', 'incorrect');
+        card.querySelector('.feedback').classList.add('hidden');
+        card.querySelectorAll('.option-btn').forEach(btn => {
+          btn.classList.remove('picked', 'correct', 'wrong');
+        });
+      });
+      updateScore();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function jumpToUnanswered() {
+      const card = Array.from(document.querySelectorAll('.question-card'))
+        .find(c => c.dataset.status === 'unanswered' && !c.classList.contains('hidden'));
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('pulse');
+        setTimeout(() => card.classList.remove('pulse'), 800);
+      }
+    }
+
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    document.getElementById('jump-unanswered').addEventListener('click', jumpToUnanswered);
+    document.getElementById('clear-filters').addEventListener('click', () => {
+      searchInput.value = '';
+      statusFilter.value = 'all';
+      applyFilters();
+    });
+    searchInput.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+
+    renderQuestions();
+  </script>
+</body>
+</html>
