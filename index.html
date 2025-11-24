@@ -443,9 +443,12 @@
 
       const feedback = card.querySelector('.feedback');
       feedback.classList.remove('hidden');
+      const explanation = question.explanation
+        ? `重點：${question.explanation}`
+        : `重點：${question.options[question.answer]}`;
       feedback.textContent = st.status === 'correct'
-        ? '做得好！這題答對了。'
-        : `正確答案：${question.options[question.answer]}`;
+        ? `做得好！這題答對了。${explanation}`
+        : `正確答案：${question.options[question.answer]}。${explanation}`;
 
       const buttons = card.querySelectorAll('.option-btn');
       buttons.forEach((btn, idx) => {
