@@ -299,6 +299,14 @@
       outline: none;
       font-size: 14px;
     }
+    .filter-controls select:focus {
+      border-color: var(--accent-2);
+      background: rgba(124, 231, 245, 0.08);
+    }
+    .filter-controls select option {
+      color: #0a0e18;
+      background: #f3f6ff;
+    }
 
     .filter-controls input::placeholder { color: #7a8ca8; }
 
@@ -452,7 +460,7 @@
           <div class="eyebrow">Citizenship practice</div>
           <h1>Instant-feedback question bank</h1>
           <p class="intro">
-            按下選項立即知道對錯，統計面板同步記錄作答狀態。搜尋題目、篩選正確或未作答的題目，隨時重置再試。
+            Instant feedback for every choice with live stats. Search questions, filter correct or unanswered items, and reset anytime to try again.
           </p>
           <div class="hero-actions">
             <button class="btn primary" id="reset-btn">Reset progress</button>
@@ -482,6 +490,22 @@
                 <option value="unanswered">Unanswered</option>
                 <option value="correct">Correct</option>
                 <option value="incorrect">Incorrect</option>
+              </select>
+              <select id="province-filter">
+                <option value="all">All provinces (Q147+)</option>
+                <option value="Quebec">Quebec</option>
+                <option value="Alberta">Alberta</option>
+                <option value="British Columbia">British Columbia</option>
+                <option value="Manitoba">Manitoba</option>
+                <option value="New Brunswick">New Brunswick</option>
+                <option value="Newfoundland and Labrador">Newfoundland and Labrador</option>
+                <option value="Nova Scotia">Nova Scotia</option>
+                <option value="Northwest Territories">Northwest Territories</option>
+                <option value="Nunavut">Nunavut</option>
+                <option value="Ontario">Ontario</option>
+                <option value="Prince Edward Island">Prince Edward Island</option>
+                <option value="Saskatchewan">Saskatchewan</option>
+                <option value="Yukon">Yukon</option>
               </select>
               <button class="btn secondary" id="clear-filters">Clear filters</button>
             </div>
@@ -544,6 +568,7 @@
     const progressPercent = document.getElementById('progress-percent');
     const searchInput = document.getElementById('search');
     const statusFilter = document.getElementById('status-filter');
+    const provinceFilter = document.getElementById('province-filter');
     const dashAnswered = document.getElementById('dash-answered');
     const dashTotal = document.getElementById('dash-total');
     const dashCorrect = document.getElementById('dash-correct');
@@ -559,9 +584,120 @@
     const overviewList = document.getElementById('overview-list');
     const openOverviewBtn = document.getElementById('open-overview');
     const closeOverviewBtn = document.getElementById('close-overview');
+    // Province mapping for Q147 onwards
+    const PROVINCE_BY_QNUM = {
+      147: 'Quebec',
+      148: 'Quebec',
+      149: 'Alberta',
+      150: 'Alberta',
+      151: 'Alberta',
+      152: 'Alberta',
+      153: 'Alberta',
+      154: 'Alberta',
+      155: 'British Columbia',
+      156: 'British Columbia',
+      157: 'British Columbia',
+      158: 'British Columbia',
+      159: 'British Columbia',
+      160: 'British Columbia',
+      161: 'British Columbia',
+      162: 'British Columbia',
+      163: 'British Columbia',
+      164: 'British Columbia',
+      165: 'British Columbia',
+      166: 'British Columbia',
+      167: 'Manitoba',
+      168: 'Manitoba',
+      169: 'Manitoba',
+      170: 'Manitoba',
+      171: 'Manitoba',
+      172: 'Manitoba',
+      173: 'New Brunswick',
+      174: 'New Brunswick',
+      175: 'New Brunswick',
+      176: 'New Brunswick',
+      177: 'New Brunswick',
+      178: 'New Brunswick',
+      179: 'Newfoundland and Labrador',
+      180: 'Newfoundland and Labrador',
+      181: 'Newfoundland and Labrador',
+      182: 'Newfoundland and Labrador',
+      183: 'Newfoundland and Labrador',
+      184: 'Newfoundland and Labrador',
+      185: 'Nova Scotia',
+      186: 'Nova Scotia',
+      187: 'Nova Scotia',
+      188: 'Nova Scotia',
+      189: 'Nova Scotia',
+      190: 'Nova Scotia',
+      191: 'Northwest Territories',
+      192: 'Northwest Territories',
+      193: 'Northwest Territories',
+      194: 'Northwest Territories',
+      195: 'Northwest Territories',
+      196: 'Nunavut',
+      197: 'Nunavut',
+      198: 'Nunavut',
+      199: 'Nunavut',
+      200: 'Nunavut',
+      201: 'Ontario',
+      202: 'Ontario',
+      203: 'Ontario',
+      204: 'Ontario',
+      205: 'Ontario',
+      206: 'Ontario',
+      207: 'Prince Edward Island',
+      208: 'Prince Edward Island',
+      209: 'Prince Edward Island',
+      210: 'Prince Edward Island',
+      211: 'Prince Edward Island',
+      212: 'Quebec',
+      213: 'Quebec',
+      214: 'Quebec',
+      215: 'Quebec',
+      216: 'Saskatchewan',
+      217: 'Saskatchewan',
+      218: 'Saskatchewan',
+      219: 'Saskatchewan',
+      220: 'Saskatchewan',
+      221: 'Saskatchewan',
+      222: 'Yukon',
+      223: 'Yukon',
+      224: 'Yukon',
+      225: 'Yukon',
+      226: 'Yukon'
+    };
+    const CORE_INDICES = QUESTIONS.map((_, idx) => idx).filter(idx => !PROVINCE_BY_QNUM[idx + 1]);
 
     function normalizeQuestion(text) {
       return text.replace(/^\\d+\\.\\s*/, '').trim();
+    }
+
+    function getActiveIndices() {
+      const province = provinceFilter.value;
+      const active = [...CORE_INDICES];
+      if (province === 'all') {
+        QUESTIONS.forEach((_, idx) => {
+          if (PROVINCE_BY_QNUM[idx + 1]) active.push(idx);
+        });
+      } else {
+        QUESTIONS.forEach((_, idx) => {
+          if (PROVINCE_BY_QNUM[idx + 1] === province) active.push(idx);
+        });
+      }
+      return active;
+    }
+
+    function computeCounts(indices) {
+      let correct = 0;
+      let incorrect = 0;
+      indices.forEach(idx => {
+        const st = state[idx];
+        if (!st) return;
+        if (st.status === 'correct') correct++;
+        else if (st.status === 'incorrect') incorrect++;
+      });
+      return { correct, incorrect, answered: correct + incorrect };
     }
 
     function renderQuestions() {
@@ -575,12 +711,13 @@
         card.className = 'question-card';
         card.dataset.index = index;
         card.dataset.status = 'unanswered';
+        card.dataset.province = PROVINCE_BY_QNUM[index + 1] || '';
         const questionText = normalizeQuestion(q.question);
         card.innerHTML = `
           <div class="q-header">
             <div class="q-number">Q${index + 1}</div>
             <div class="q-text">${questionText}</div>
-            <span class="pill">未作答</span>
+            <span class="pill">Unanswered</span>
           </div>
           <div class="options">
             ${q.options.map((opt, i) => `
@@ -656,22 +793,29 @@
     }
 
     function updateScore() {
-      const answered = correctCount + incorrectCount;
+      const activeIndices = getActiveIndices();
+      const { correct, incorrect, answered } = computeCounts(activeIndices);
+      const totalActive = activeIndices.length;
+      correctCount = correct;
+      incorrectCount = incorrect;
+      const percent = totalActive ? Math.round((answered / totalActive) * 100) : 0;
+      totalCountEl.textContent = totalActive;
+      dashTotal.textContent = totalActive;
+      mbTotal.textContent = totalActive;
       answeredCountEl.textContent = answered;
-      correctCountEl.textContent = correctCount;
-      incorrectCountEl.textContent = incorrectCount;
-      const percent = Math.round((answered / QUESTIONS.length) * 100);
+      correctCountEl.textContent = correct;
+      incorrectCountEl.textContent = incorrect;
       progressPercent.textContent = `${percent}%`;
       progressBar.style.width = `${percent}%`;
        // dashboard + mobile
       dashAnswered.textContent = answered;
-      dashCorrect.textContent = correctCount;
-      dashIncorrect.textContent = incorrectCount;
+      dashCorrect.textContent = correct;
+      dashIncorrect.textContent = incorrect;
       dashPercent.textContent = `${percent}%`;
       dashProgressBar.style.width = `${percent}%`;
       mbAnswered.textContent = answered;
-      mbCorrect.textContent = correctCount;
-      mbIncorrect.textContent = incorrectCount;
+      mbCorrect.textContent = correct;
+      mbIncorrect.textContent = incorrect;
       mbPercent.textContent = `${percent}%`;
       applyFilters();
       refreshOverview();
@@ -680,14 +824,18 @@
     function applyFilters() {
       const term = searchInput.value.trim().toLowerCase();
       const status = statusFilter.value;
+      const province = provinceFilter.value;
       document.querySelectorAll('.question-card').forEach(card => {
         const idx = Number(card.dataset.index);
         const q = QUESTIONS[idx];
+        const qNumber = idx + 1;
         const matchesSearch = term === '' ||
           q.question.toLowerCase().includes(term) ||
           String(idx + 1) === term;
         const matchesStatus = status === 'all' || card.dataset.status === status;
-        card.classList.toggle('hidden', !(matchesSearch && matchesStatus));
+        const cardProvince = card.dataset.province;
+        const matchesProvince = province === 'all' || qNumber < 147 || (cardProvince && cardProvince === province);
+        card.classList.toggle('hidden', !(matchesSearch && matchesStatus && matchesProvince));
       });
     }
 
@@ -698,7 +846,7 @@
       document.querySelectorAll('.question-card').forEach(card => {
         card.dataset.status = 'unanswered';
         card.classList.remove('correct', 'incorrect');
-        card.querySelector('.pill').textContent = '未作答';
+        card.querySelector('.pill').textContent = 'Unanswered';
         card.querySelector('.pill').classList.remove('correct', 'incorrect');
         card.querySelector('.feedback').classList.add('hidden');
         card.querySelectorAll('.option-btn').forEach(btn => {
@@ -724,7 +872,8 @@
     document.getElementById('clear-filters').addEventListener('click', () => {
       searchInput.value = '';
       statusFilter.value = 'all';
-      applyFilters();
+      provinceFilter.value = 'all';
+      updateScore();
     });
     openOverviewBtn.addEventListener('click', () => {
       overviewModal.style.display = 'flex';
@@ -738,6 +887,7 @@
     });
     searchInput.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
+    provinceFilter.addEventListener('change', updateScore);
 
     renderQuestions();
   </script>
